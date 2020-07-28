@@ -226,6 +226,11 @@ Function InstallMediaPlayerClassic {
 	choco install mpc-hc -y
 }
 
+Function InstallMediaPlayerClassic {
+	Write-Output "Installing EarTrumpet"
+	choco install eartrumpet -y
+}
+
 ##########
 # Privacy Tweaks
 ##########
