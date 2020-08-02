@@ -125,6 +125,7 @@ $tweaks = @(
 	"EnableNumlock",             	# "DisableNumlock",
 	# "EnableDarkMode",				# "DisableDarkMode",
 	"Stop-EdgePDF",
+	"EnableSecondInTaskBar",
 
 	### Explorer UI Tweaks ###
 	"ShowKnownExtensions",          # "HideKnownExtensions",
@@ -150,6 +151,13 @@ $tweaks = @(
 	"Hide3DObjectsFromExplorer",  # "Show3DObjectsInExplorer",
 	# "DisableThumbnails",          # "EnableThumbnails",
 	# "DisableThumbsDB",              # "EnableThumbsDB",
+	"HideMicrosoftStoreOpenWith", "HideRichTextFromContext"
+	"HideIncludeLibrary", "HidePrintBatCmd",
+	"HideEditFromImages", "HideCreateVideo",
+	"HideEditWithPhotos", "HideEditPaint3D",
+	"HideShare", "HideCastToDevice",
+	"InstallCabInContext",
+	#"AddRunAsDiffrentUser",
 
 	### Application Tweaks ###
 	"DisableOneDrive",              # "EnableOneDrive",
@@ -1534,6 +1542,12 @@ Function DisableNumlock {
 	}
 }
 
+# Show seconds on taskbar clock
+Function EnableSecondInTaskBar {
+	Write-Output "Adding seconds to taskbar."
+	New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowSecondsInSystemClock -PropertyType DWord -Value 1 -Force
+}
+
 
 
 ##########
@@ -1890,7 +1904,101 @@ Function EnableThumbsDB {
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DisableThumbsDBOnNetworkFolders" -ErrorAction SilentlyContinue
 }
 
+# Hide the "Look for an app in the Microsoft Store" item in "Open with" dialog
+Function HideMicrosoftStoreOpenWith {
+	if (-not (Test-Path -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer))
+	{
+		New-Item -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer -Force
+	}
+	New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer -Name NoUseStoreOpenWith -PropertyType DWord -Value 1 -Force
+}
 
+# Remove the "Rich Text Document" item from the "New" context menu
+Function HideRichTextFromContext {
+	if ((Get-WindowsCapability -Online -Name "Microsoft.Windows.WordPad*").State -eq "Installed")
+	{
+		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\.rtf\ShellNew -Force -ErrorAction Ignore
+	}
+}
+
+# Hide the "Include in Library" item from the context menu
+Function HideIncludeLibrary {
+	New-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\Folder\shellex\ContextMenuHandlers\Library Location" -Name "(Default)" -PropertyType String -Value "-{3dad6c5d-2167-4cae-9914-f99e41c12cfa}" -Force
+}
+
+# Hide the "Print" item from the .bat and .cmd context menu
+Function HidePrintBatCmd {
+	New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\batfile\shell\print -Name ProgrammaticAccessOnly -PropertyType String -Value "" -Force
+	New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\cmdfile\shell\print -Name ProgrammaticAccessOnly -PropertyType String -Value "" -Force
+}
+
+# Hide the "Edit" item from the images context menu
+Function HideEditFromImages {
+	if ((Get-WindowsCapability -Online -Name "Microsoft.Windows.MSPaint*").State -eq "Installed")
+	{
+		New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\SystemFileAssociations\image\shell\edit -Name ProgrammaticAccessOnly -PropertyType String -Value "" -Force
+	}
+}
+
+# Hide the "Create a new video" item from the context menu
+Function HideCreateVideo {
+	if (Get-AppxPackage -Name Microsoft.Windows.Photos)
+	{
+		New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\AppX43hnxtbyyps62jhe9sqpdzxn1790zetc\Shell\ShellCreateVideo -Name ProgrammaticAccessOnly -PropertyType String -Value "" -Force
+	}
+}
+
+# Hide the "Edit with Photos" item from the context menu
+Function HideEditWithPhotos {
+	if (Get-AppxPackage -Name Microsoft.Windows.Photos)
+	{
+		New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\AppX43hnxtbyyps62jhe9sqpdzxn1790zetc\Shell\ShellEdit -Name ProgrammaticAccessOnly -PropertyType String -Value "" -Force
+	}
+}
+
+# Hide the "Edit with Paint 3D" item from the context menu
+Function HideEditPaint3D {
+	$extensions = @(".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".tif", ".tiff")
+	foreach ($extension in $extensions)
+	{
+		New-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\SystemFileAssociations\$extension\Shell\3D Edit" -Name ProgrammaticAccessOnly -PropertyType String -Value "" -Force
+	}
+}
+
+# Hide the "Share" item from the context menu
+Function HideShare {
+	if (-not (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked"))
+	{
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" -Force
+	}
+	New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" -Name "{E2BF9676-5F8F-435C-97EB-11607A5BEDF7}" -PropertyType String -Value "" -Force
+}
+
+# Hide the "Cast to Device" item from the context menu
+Function HideCastToDevice {
+	if (-not (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked"))
+	{
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" -Force
+	}
+	New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" -Name "{7AD84985-87B4-4a16-BE58-8B72A5B390F7}" -PropertyType String -Value "Play to menu" -Force
+}
+
+# Add the "Run as different user" item to the .exe files types context menu
+Function AddRunAsDiffrentUser {
+	Remove-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\exefile\shell\runasuser -Name Extended -Force -ErrorAction Ignore
+}
+
+# Add the "Install" item to the .cab archives context menu
+Function InstallCabInContext {
+	if (-not (Test-Path -Path Registry::HKEY_CLASSES_ROOT\CABFolder\Shell\RunAs\Command))
+	{
+		New-Item -Path Registry::HKEY_CLASSES_ROOT\CABFolder\Shell\RunAs\Command -Force
+	}
+	$Value = "{0}" -f 'cmd /c DISM.exe /Online /Add-Package /PackagePath:"%1" /NoRestart & pause'
+	New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\CABFolder\Shell\RunAs\Command -Name "(Default)" -PropertyType String -Value $Value -Force
+	New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\CABFolder\Shell\RunAs -Name MUIVerb -PropertyType String -Value "@shell32.dll,-10210" -Force
+	New-ItemProperty -Path Registry::HKEY_CLASSES_ROOT\CABFolder\Shell\RunAs -Name HasLUAShield -PropertyType String -Value "" -Force
+}
 
 ##########
 # Application Tweaks
