@@ -45,6 +45,14 @@
 # Default preset
 ##########
 
+$initial = @(
+	### Require administrator privileges ###
+	"RequireAdmin",
+
+	### External Program Setup ###
+	"InstallTitusProgs", #REQUIRED FOR OTHER PROGRAM INSTALLS!
+	"InstallOptional"
+)
 
 $privacy = @(
 	### Privacy Tweaks ###
@@ -204,22 +212,7 @@ $apps = @(
 	# "EnableAudio",                # "DisableAudio",
 )
 
-$tweaks = @(
-	### Require administrator privileges ###
-	"RequireAdmin",
-
-	### External Program Setup ###
-	"InstallTitusProgs", #REQUIRED FOR OTHER PROGRAM INSTALLS!
-	"InstallOptional"
-
-	### Variable Tweaks Above ###
-	$privacy,
-	$security,
-	$services,
-	$ui,
-	$explorerui,
-	$apps,
-
+$final = @(	
 	### Windows Apps ###
 	"DebloatAll",
 
@@ -232,6 +225,7 @@ $tweaks = @(
 	"Restart"
 )
 
+$tweaks = $initial, $privacy, $security, $services, $ui, $explorerui, $apps, $final
 
 #########
 # Recommended Titus Programs
