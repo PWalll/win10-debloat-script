@@ -285,7 +285,6 @@ Function InstallOptional {
 			if ($result -eq 0) {Install($_[1], $_[2])}
 		}
 	}
-	Pause
 }
 
 Function Install {
