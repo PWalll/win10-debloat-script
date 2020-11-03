@@ -209,7 +209,7 @@ $tweaks = @(
 	"RequireAdmin",
 
 	### External Program Setup ###
-	#"InstallTitusProgs", #REQUIRED FOR OTHER PROGRAM INSTALLS!
+	"InstallTitusProgs", #REQUIRED FOR OTHER PROGRAM INSTALLS!
 	"InstallOptional"
 
 	### Variable Tweaks Above ###
@@ -281,6 +281,7 @@ Function InstallOptional {
 		@("Install ShareX", "choco", "sharex"),
 		@("Install NVM", "script", "nvm"),
 		@("Install Ubuntu", "script", "ubuntu")
+		@("Install Brave", "script", "brave")
 	)
 	If ($Choices -eq "1")
 	{
@@ -322,6 +323,11 @@ Function Install {
 						nvm install 14.15.0
 						nvm use 14.15.0
 					}
+				}
+				"brave"
+				{
+					Invoke-WebRequest -Uri "https://laptop-updates.brave.com/download/CHR253" -OutFile $env:USERPROFILE\Downloads\brave.exe
+					~/Downloads/brave.exe
 				}
 			}
 		}
