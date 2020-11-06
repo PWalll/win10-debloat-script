@@ -225,7 +225,7 @@ $final = @(
 	"Restart"
 )
 
-$tweaks = $initial, $privacy, $security, $services, $ui, $explorerui, $apps, $final
+$tweaks = $initial + $privacy + $security + $services + $ui + $explorerui + $apps + $final
 
 #########
 # Recommended Titus Programs
