@@ -137,7 +137,7 @@ $ui = @(
 	# "ShowSmallTaskbarIcons",        # "ShowLargeTaskbarIcons",
 	# "SetTaskbarCombineWhenFull",    # "SetTaskbarCombineNever",     # "SetTaskbarCombineAlways",
 	"HideTaskbarPeopleIcon",        # "ShowTaskbarPeopleIcon",
-	"ShowTrayIcons",                # "HideTrayIcons",
+	"HideTrayIcons",                # "ShowTrayIcons",
 	"DisableSearchAppInStore",      # "EnableSearchAppInStore",
 	"DisableNewAppPrompt",          # "EnableNewAppPrompt",
 	# "SetControlPanelSmallIcons",  # "SetControlPanelLargeIcons",  # "SetControlPanelCategories",
@@ -268,21 +268,25 @@ Function InstallOptional {
 	$Choices =  $Host.UI.PromptForChoice("Defaults", "Want to use the default options?", @("&Yes", "&No"), "0")
 	$Other = @(
 		@("Install VS Code", "choco", "vscode"),
+		@("Install NVM", "choco", "nvm"),
 		@("Install Discord", "choco", "discord"),
 		@("Install RamBox", "choco", "rambox"),
 		@("Install Parsec", "choco", "parsec"),
-		@("Install Parsec", "choco", "spotify"),
+		@("Install Spotify", "choco", "spotify"),
 		@("Install ShareX", "choco", "sharex"),
-		@("Install NVM", "script", "nvm"),
-		@("Install Ubuntu", "script", "ubuntu")
+		@("Install Ubuntu", "script", "ubuntu"),
 		@("Install Brave", "script", "brave")
 	)
 	If ($Choices -eq "1")
 	{
+        $installation = [System.Collections.ArrayList]@()
 		$Other | ForEach-Object -Process {
 			$name = $_[0]
 			$result = $Host.UI.PromptForChoice("Choice", "Want to $Name", @("&Yes", "&No"), "1")
-			if ($result -eq 0) {Install($_[1], $_[2])}
+			if ($result -eq 0) {$installation.Add(@($_[1], $_[2]))}
+		}
+        $installation | ForEach-Object -Process {
+            Install -way $_[0] -what $_[1]
 		}
 	}
 }
@@ -303,19 +307,10 @@ Function Install {
 			{
 				"ubuntu"
 				{
+					InstallLinuxSubsystem
 					Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile Ubuntu.appx -UseBasicParsing
 					Add-AppxPackage .\Ubuntu.appx
 					Remove-Item -path .\Ubuntu.appx
-				}
-				"nvm"
-				{
-					choco install nvm -y
-					RefreshEnv.cmd
-					$result = $Host.UI.PromptForChoice("Choice", "Want to LTS version of nodejs", @("&Yes", "&No"), "0")
-					if ($result -eq "0") {
-						nvm install 14.15.0
-						nvm use 14.15.0
-					}
 				}
 				"brave"
 				{
