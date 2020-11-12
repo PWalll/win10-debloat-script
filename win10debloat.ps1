@@ -51,6 +51,7 @@ $initial = @(
 
 	### External Program Setup ###
 	"InstallTitusProgs", #REQUIRED FOR OTHER PROGRAM INSTALLS!
+	"InstallPrograms",
 	"InstallOptional"
 )
 
